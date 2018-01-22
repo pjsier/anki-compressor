@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from tempfile import NamedTemporaryFile
 from pydub import AudioSegment
 from PIL import Image
+from tqdm import tqdm
 
 
 IMAGE_EXT = ('jpg', 'jpeg', 'png', 'tif', 'tiff', 'gif', 'webp')
@@ -64,7 +65,10 @@ def main():
 
     output_file = args.output
     if output_file is None:
-        output_file = 'MIN_{}'.format(args.input)
+        output_file = os.path.join(
+            os.path.dirname(args.input),
+            'MIN_{}'.format(os.path.basename(args.input))
+        )
 
     if args.input == output_file:
         raise ValueError('Output file cannot have the same name as input')
@@ -81,7 +85,7 @@ def main():
     compressed_zip.writestr('media', media_str)
     media_json = json.loads(media_str)
 
-    for k, v in media_json.items():
+    for k, v in tqdm(media_json.items()):
         if len(v.split('.')) < 2:
             compressed_zip.writestr(k, anki_zip.read(k))
             continue

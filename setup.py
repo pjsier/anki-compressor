@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='anki-compressor',
-    version='0.0.1',
+    version='0.0.2',
     url='https://github.com/pjsier/anki-compressor',
     license='MIT',
     author='Patrick Sier',
@@ -11,6 +11,7 @@ setup(
     install_requires=[
         'Pillow',
         'pydub',
+        'tqdm'
     ],
     packages=['anki_compressor'],
     entry_points={
