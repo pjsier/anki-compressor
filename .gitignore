@@ -1,0 +1,10 @@
+.DS_Store
+*.pyc
+*.apkg
+
+venv
+build
+dist
+*.egg-info
+
+.vscode
