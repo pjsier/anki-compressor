@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import sqlite3
 import argparse
 from io import BytesIO
 from zipfile import ZipFile
@@ -25,6 +26,23 @@ parser.add_argument('-b', '--bitrate', dest='bitrate', default='48k',
                     help='ffmpeg-compliant bitrate value for audio compression, defaults to 48k')
 
 
+def update_db(conn, cur, filename, ext):
+    new_filename = '.'.join(['.'.join(filename.split('.')[:-1]), ext])
+    cur.execute(
+        "SELECT id, flds, sfld FROM notes WHERE flds LIKE ? OR sfld LIKE ?",
+        ('%{}%'.format(filename), '%{}%'.format(filename))
+    )
+    rows = cur.fetchall()
+    for row in rows:
+        cur.execute(
+            'UPDATE notes SET flds = ?, sfld = ? WHERE id = ?',
+            (row[1].replace(filename, new_filename),
+            row[2].replace(filename, new_filename),
+            row[0])
+        )
+        conn.commit()
+
+
 def compress_image(ext, image_bytes, quality=50):
     img_buf = BytesIO()
     img_buf.write(image_bytes)
@@ -32,9 +50,7 @@ def compress_image(ext, image_bytes, quality=50):
 
     im = Image.open(img_buf)
     output_buf = BytesIO()
-    if ext == 'jpg':
-        ext = 'JPEG'
-    im.save(output_buf, ext, optimize=True, quality=quality)
+    im.convert('RGB').save(output_buf, 'JPEG', optimize=True, quality=quality)
 
     return output_buf.getvalue()
 
@@ -49,7 +65,7 @@ def compress_audio(ext, audio_bytes, bitrate='48k'):
     out_tmp.close()
 
     segment = AudioSegment.from_file(in_tmp.name, ext)
-    segment.export(out_tmp.name, format=ext, bitrate=bitrate)
+    segment.export(out_tmp.name, format='ogg', bitrate=bitrate)
 
     with open(out_tmp.name, 'rb') as f:
         compressed_audio = f.read()
@@ -77,13 +93,18 @@ def main():
     if not 'media' in anki_zip.namelist():
         raise ValueError('{} does not contain a media file'.format(args.input))
     
-    # Create new zip, copy collection file
+    # Create new zip, temp file for SQLite database
     compressed_zip = ZipFile(output_file, 'w')
-    compressed_zip.writestr('collection.anki2', anki_zip.read('collection.anki2'))
+    db_tmp = NamedTemporaryFile(delete=False)
+    db_tmp.write(anki_zip.read('collection.anki2'))
+    db_tmp.seek(0)
+    db_tmp.close()
+    conn = sqlite3.connect(db_tmp.name)
+    cur = conn.cursor()
 
-    media_str = anki_zip.read('media').decode('utf-8')
-    compressed_zip.writestr('media', media_str)
-    media_json = json.loads(media_str)
+    # Read media JSON, create new dict for updates
+    media_json = json.loads(anki_zip.read('media').decode('utf-8'))
+    media = {}
 
     for k, v in tqdm(media_json.items()):
         if len(v.split('.')) < 2:
@@ -92,12 +113,22 @@ def main():
         ext = v.split('.')[-1].lower()
         if ext in IMAGE_EXT:
             contents = compress_image(ext, anki_zip.read(k), quality=args.quality)
+            v = '.'.join(['.'.join(v.split('.')[:-1]), 'jpg'])
+            update_db(conn, cur, v, 'jpg')
         elif ext in AUDIO_EXT:
             contents = compress_audio(ext, anki_zip.read(k), bitrate=args.bitrate)
+            v = '.'.join(['.'.join(v.split('.')[:-1]), 'ogg'])
+            update_db(conn, cur, v, 'ogg')
         else:
             contents = anki_zip.read(k)
+        media[k] = v
         compressed_zip.writestr(k, contents)
 
+    compressed_zip.writestr('media', json.dumps(media))
+    conn.close()
+    with open(db_tmp.name, 'rb') as db_file:
+        compressed_zip.writestr('collection.anki2', db_file.read())
+    os.remove(db_file.name)
     compressed_zip.close()
 
 

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='anki-compressor',
-    version='0.0.2',
+    version='0.0.3',
     url='https://github.com/pjsier/anki-compressor',
     license='MIT',
     author='Patrick Sier',

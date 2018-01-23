@@ -4,7 +4,7 @@ Compresses images and audio in [Anki](https://apps.ankiweb.net/) .apkg files to 
 
 ## Installation
 
-`anki-compressor` can be installed with Pip, but it requires [Pydub](http://pydub.com/) and [Pillow](https://pillow.readthedocs.io/en/latest/) which have native dependencies that need to be installed.
+`anki-compressor` can be installed with Pip, but it requires [Pydub](http://pydub.com/) and [Pillow](https://pillow.readthedocs.io/en/latest/) which have native dependencies that need to be installed. You'll need to include support for `libvorbis` in the audio library, since all audio is converted to `ogg` and all images are converted to `jpg`.
 
 Once you've installed those dependencies, run `pip install anki-compressor` to install the command line script.
 
