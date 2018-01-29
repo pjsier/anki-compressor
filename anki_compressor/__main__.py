@@ -113,12 +113,12 @@ def main():
         ext = v.split('.')[-1].lower()
         if ext in IMAGE_EXT:
             contents = compress_image(ext, anki_zip.read(k), quality=args.quality)
-            v = '.'.join(['.'.join(v.split('.')[:-1]), 'jpg'])
             update_db(conn, cur, v, 'jpg')
+            v = '.'.join(['.'.join(v.split('.')[:-1]), 'jpg'])
         elif ext in AUDIO_EXT:
             contents = compress_audio(ext, anki_zip.read(k), bitrate=args.bitrate)
-            v = '.'.join(['.'.join(v.split('.')[:-1]), 'ogg'])
             update_db(conn, cur, v, 'ogg')
+            v = '.'.join(['.'.join(v.split('.')[:-1]), 'ogg'])
         else:
             contents = anki_zip.read(k)
         media[k] = v
