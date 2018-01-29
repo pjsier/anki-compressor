@@ -48,11 +48,14 @@ def compress_image(ext, image_bytes, quality=50):
     img_buf.write(image_bytes)
     img_buf.seek(0)
 
-    im = Image.open(img_buf)
-    output_buf = BytesIO()
-    im.convert('RGB').save(output_buf, 'JPEG', optimize=True, quality=quality)
+    try:
+        im = Image.open(img_buf)
+        output_buf = BytesIO()
+        im.convert('RGB').save(output_buf, 'JPEG', optimize=True, quality=quality)
 
-    return output_buf.getvalue()
+        return output_buf.getvalue()
+    except:
+        return None
 
 
 def compress_audio(ext, audio_bytes, bitrate='48k'):
@@ -64,16 +67,19 @@ def compress_audio(ext, audio_bytes, bitrate='48k'):
     in_tmp.close()
     out_tmp.close()
 
-    segment = AudioSegment.from_file(in_tmp.name, ext)
-    segment.export(out_tmp.name, format='ogg', bitrate=bitrate)
+    try:
+        segment = AudioSegment.from_file(in_tmp.name, ext)
+        segment.export(out_tmp.name, format='ogg', bitrate=bitrate)
 
-    with open(out_tmp.name, 'rb') as f:
-        compressed_audio = f.read()
+        with open(out_tmp.name, 'rb') as f:
+            compressed_audio = f.read()
 
-    os.remove(in_tmp.name)
-    os.remove(out_tmp.name)
+        os.remove(in_tmp.name)
+        os.remove(out_tmp.name)
 
-    return compressed_audio
+        return compressed_audio
+    except:
+        return None
 
 
 def main():
@@ -111,15 +117,18 @@ def main():
             compressed_zip.writestr(k, anki_zip.read(k))
             continue
         ext = v.split('.')[-1].lower()
+        contents = None
         if ext in IMAGE_EXT:
             contents = compress_image(ext, anki_zip.read(k), quality=args.quality)
-            update_db(conn, cur, v, 'jpg')
-            v = '.'.join(['.'.join(v.split('.')[:-1]), 'jpg'])
+            if contents is not None:
+                update_db(conn, cur, v, 'jpg')
+                v = '.'.join(['.'.join(v.split('.')[:-1]), 'jpg'])
         elif ext in AUDIO_EXT:
             contents = compress_audio(ext, anki_zip.read(k), bitrate=args.bitrate)
-            update_db(conn, cur, v, 'ogg')
-            v = '.'.join(['.'.join(v.split('.')[:-1]), 'ogg'])
-        else:
+            if contents is not None:
+                update_db(conn, cur, v, 'ogg')
+                v = '.'.join(['.'.join(v.split('.')[:-1]), 'ogg'])
+        if contents is None:
             contents = anki_zip.read(k)
         media[k] = v
         compressed_zip.writestr(k, contents)
