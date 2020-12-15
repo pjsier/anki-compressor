@@ -3,8 +3,11 @@
 *.apkg
 
 venv
+.venv
 build
 dist
-*.egg-info
+*.egg-info/
+*.egg
+*-metadata/
 
 .vscode
