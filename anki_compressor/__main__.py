@@ -36,8 +36,8 @@ def update_db(conn, cur, filename, ext):
     for row in rows:
         cur.execute(
             'UPDATE notes SET flds = ?, sfld = ? WHERE id = ?',
-            (row[1].replace(filename, new_filename),
-            row[2].replace(filename, new_filename),
+            (str(row[1]).replace(filename, new_filename),
+            str(row[2]).replace(filename, new_filename),
             row[0])
         )
         conn.commit()
