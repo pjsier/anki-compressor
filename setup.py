@@ -2,6 +2,8 @@ import os
 
 from setuptools import setup
 
+from anki_compressor import __version__
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
@@ -10,7 +12,7 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="anki-compressor",
-    version="0.0.7",
+    version=__version__,
     url="https://github.com/pjsier/anki-compressor",
     license="MIT",
     author="Patrick Sier",
