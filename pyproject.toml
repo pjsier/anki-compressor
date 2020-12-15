@@ -1,0 +1,36 @@
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+exclude = '''
+/(
+    \.git
+  | \.pytest_cache
+  | \.tox
+  | \.venv
+  | \.vscode
+  | __pycache__
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+sections = [
+  "FUTURE",
+  "STDLIB",
+  "THIRDPARTY",
+  "FIRSTPARTY",
+  "LOCALFOLDER",
+]
+known_first_party = ["anki_compressor"]
+skip_glob = [
+  "*/.venv/*",
+  "*/.pytest_cache/*",
+  "*/dist/*",
+  "*/build/*",
+]
+multi_line_output = 3
+line_length = 88
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
