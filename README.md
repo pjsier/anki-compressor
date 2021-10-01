@@ -28,12 +28,14 @@ optional arguments:
                         Quality value for image compression (0-100), defaults to 50
   -b BITRATE, --bitrate BITRATE
                         ffmpeg-compliant bitrate value for audio compression, defaults to 48k
+  -t {jpg,jpeg,png,tif,tiff,gif,webp}, --image_type {jpg,jpeg,png,tif,tiff,gif,webp} 
+  		        Filetype for image compression, defaults to jpeg	
 ```
 
 Here's an example of compressing a file `input.apkg` and writing the output to `output.apkg`:
 
 ```bash
-anki-compressor -i input.apkg -o output.apkg -q 50 -b 64k
+anki-compressor -i input.apkg -o output.apkg -q 50 -b 64k -t jpeg
 ```
 
 ### Arguments
@@ -42,3 +44,4 @@ anki-compressor -i input.apkg -o output.apkg -q 50 -b 64k
 - `-o`: Output file name, defaults to `MIN_<INPUT>`
 - `-q`: Image quality on a scale of 1-100 supplied to Pillow's image processing, defaults to 50
 - `-b`: Bitrate for audio output, defaults to '48k'
+- `-t`: Filetype for image compression, defaults to jpeg 
