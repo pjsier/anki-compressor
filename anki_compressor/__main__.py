@@ -48,6 +48,11 @@ def update_db(conn, cur, filename, ext):
 
 
 def compress_image(ext, image_bytes, quality=50):
+
+    # PIL does not recognize .tif extension
+    if ext == "tif":
+        ext = "tiff"
+
     img_buf = BytesIO()
     img_buf.write(image_bytes)
     img_buf.seek(0)
@@ -55,7 +60,7 @@ def compress_image(ext, image_bytes, quality=50):
     try:
         im = Image.open(img_buf)
         output_buf = BytesIO()
-        im.convert("RGB").save(output_buf, "JPEG", optimize=True, quality=quality)
+        im.convert("RGB").save(output_buf, format=ext, optimize=True, quality=quality)
 
         return output_buf.getvalue()
     except Exception:
@@ -117,6 +122,14 @@ def main():
         default="48k",
         help="ffmpeg-compliant bitrate value for audio compression, defaults to 48k",
     )
+    parser.add_argument(
+        "-t",
+        "--image_type",
+        dest="image_type",
+        default="jpeg",
+        choices=IMAGE_EXT,
+        help="Filetype for image compression, defaults to jpeg",
+    )
 
     args = parser.parse_args()
 
@@ -153,10 +166,12 @@ def main():
         ext = v.split(".")[-1].lower()
         contents = None
         if ext in IMAGE_EXT:
-            contents = compress_image(ext, anki_zip.read(k), quality=args.quality)
+            contents = compress_image(
+                args.image_type, anki_zip.read(k), quality=args.quality
+            )
             if contents is not None:
-                update_db(conn, cur, v, "jpg")
-                v = ".".join([".".join(v.split(".")[:-1]), "jpg"])
+                update_db(conn, cur, v, args.image_type)
+                v = ".".join([".".join(v.split(".")[:-1]), args.image_type])
         elif ext in AUDIO_EXT:
             contents = compress_audio(ext, anki_zip.read(k), bitrate=args.bitrate)
             if contents is not None:
