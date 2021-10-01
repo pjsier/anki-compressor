@@ -48,6 +48,11 @@ def update_db(conn, cur, filename, ext):
 
 
 def compress_image(ext, image_bytes, quality=50):
+
+    # PIL does not recognize .tif extension
+    if ext == "tif":
+        ext = "tiff"
+
     img_buf = BytesIO()
     img_buf.write(image_bytes)
     img_buf.seek(0)
@@ -55,7 +60,7 @@ def compress_image(ext, image_bytes, quality=50):
     try:
         im = Image.open(img_buf)
         output_buf = BytesIO()
-        im.convert("RGB").save(output_buf, ext, optimize=True, quality=quality)
+        im.convert("RGB").save(output_buf, format=ext, optimize=True, quality=quality)
 
         return output_buf.getvalue()
     except Exception:
