@@ -22,7 +22,10 @@ setup(
     install_requires=["Pillow", "pydub", "tqdm"],
     packages=["anki_compressor"],
     entry_points={
-        "console_scripts": ["anki-compressor = anki_compressor.__main__:main"]
+        "console_scripts": [
+            "anki-compressor = anki_compressor.__main__:main",
+            "ankic = anki_compressor.__main__:main"
+        ]
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
