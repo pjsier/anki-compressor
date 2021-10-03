@@ -24,7 +24,7 @@ setup(
     entry_points={
         "console_scripts": [
             "anki-compressor = anki_compressor.__main__:main",
-            "ankic = anki_compressor.__main__:main"
+            "ankic = anki_compressor.__main__:main",
         ]
     },
     classifiers=[
